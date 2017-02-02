@@ -106,7 +106,6 @@ services:
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - /var/www/secure/certs:/etc/nginx/certs
-      - /var/www/nginx:/etc/nginx
     networks:
       - ibmnet
 
