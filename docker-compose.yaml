@@ -97,15 +97,19 @@ services:
       - apim
       - esmaster
       
-  nginx-proxy:
-    image: jwilder/nginx-proxy
-    container_name: reverse-proxy
+  nginx:
+    build: sni-proxy
+    environment:
+      - PORTAL_DNS=$PORTAL_URI
+      - APIM_DNS=$APIM_URI
+      - GATEWAY_DNS=$GATEWAY_URI
     ports:
-      - "80:80"
       - "443:443"
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - /var/www/secure/certs:/etc/nginx/certs
+    container_name: nginx
+    depends_on:
+      - ibmportal
+      - datapower
+      - apim
     networks:
       - ibmnet
 
