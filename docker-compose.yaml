@@ -10,6 +10,8 @@ services:
   esmaster:
     build: elasticsearch-master
     container_name: esmaster
+    environment:
+      - VIRTUAL_HOST=$ELASTIC_URI
     networks:
       - ibmnet
     volumes:
@@ -22,6 +24,7 @@ services:
       - ibmnet
     environment:
       - DATAPOWER_ACCEPT_LICENSE=$ACCEPT_LICENSE
+      - VIRTUAL_HOST=$DATAPOWER_URI
 
   apim:
     image: ibmcom/apiconnect:manager-${APIC_VERSION}
@@ -31,11 +34,11 @@ services:
       - apim_wip:/wip
       - config_ssh_keys:/keys:ro
     environment:
-      - MANAGEMENT_CLUSTER_HOST=$APIM_DNS
+      - MANAGEMENT_CLUSTER_HOST=apim
       - PORTAL_PRIVATE_KEY=/keys/portal
       - PORTAL_PUBLIC_KEY=/keys/portal.pub
-      - PORTAL_LB=$PORTAL_DNS
-      - ES_HOST=$ES_DNS
+      - PORTAL_LB=ibmportal
+      - ES_HOST=esmaster
       - ES_PORT=9500
       - SMTP_HOST
       - SMTP_PORT
@@ -44,6 +47,7 @@ services:
       - SMTP_SENDER
       - LOGSTASH_HOST=ibmlogstash
       - ACCEPT_LICENSE
+      - VIRTUAL_HOST=$APIM_URI
     container_name: apim
     networks:
       - ibmnet
@@ -54,15 +58,16 @@ services:
   ibmportal:
     image: ibmcom/apiconnect:portal-${APIC_VERSION}
     environment:
-      - PORTAL_LB=$PORTAL_DNS
+      - PORTAL_LB=ibmportal
       - PORTAL_PUBLIC_KEY=/keys/portal.pub
-      - APIC_HOST=$APIM_DNS
+      - APIC_HOST=apim
       - SMTP_HOST
       - SMTP_PORT
       - SMTP_USERNAME
       - SMTP_PASSWORD
       - SMTP_SENDER
       - ACCEPT_LICENSE
+      - VIRTUAL_HOST=$PORTAL_URI
     volumes:
       - ibmportal_var:/var
       - ibmportal_etc:/etc
@@ -83,9 +88,9 @@ services:
   logstash:
     image: ibmcom/apiconnect:logstash-${APIC_VERSION}
     environment:
-      - ES_HOST=$ES_DNS
-      - MGMT_HOST=$APIM_DNS
-      - DB_HOST=$APIM_DNS
+      - ES_HOST=esmaster
+      - MGMT_HOST=apim
+      - DB_HOST=apim
       - ACCEPT_LICENSE
     networks:
       - ibmnet
@@ -93,20 +98,16 @@ services:
     depends_on:
       - apim
       - esmaster
-
-  nginx:
-    build: sni-proxy
-    environment:
-      - PORTAL_DNS=$PORTAL_DNS
-      - APIM_DNS=$APIM_DNS
-      - GATEWAY_DNS=$GATEWAY_DNS
+      
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: reverse-proxy
     ports:
+      - "80:80"
       - "443:443"
-    container_name: nginx
-    depends_on:
-      - ibmportal
-      - datapower
-      - apim
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /var/www/secure/certs:/etc/nginx/certs
     networks:
       - ibmnet
 
