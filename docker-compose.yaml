@@ -22,7 +22,7 @@ services:
       - ibmnet
     environment:
       - DATAPOWER_ACCEPT_LICENSE=$ACCEPT_LICENSE
-      - VIRTUAL_HOST=${DATAPOWER_URI}
+      - VIRTUAL_HOST=${GATEWAY_URI}
 
   apim:
     image: ibmcom/apiconnect:manager-${APIC_VERSION}
