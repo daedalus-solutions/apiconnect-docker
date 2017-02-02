@@ -8,26 +8,26 @@ events {
 
 stream {
     map $ssl_preread_server_name $name {
-        PORTAL  portal_backend;
-        APIM    apim_backend;
-        GATEWAY gateway_backend;
-        GWADMIN gateway_admin;
+        PORTAL_URI  portal_backend;
+        APIM_URI    apim_backend;
+        GATEWAY_URI gateway_backend;
+        GWADMIN_URI gateway_admin;
         default gateway_backend;
     }
 
     upstream apim_backend {
-        server APIM:443;
+        server APIM_DNS:443;
     }
 
     upstream portal_backend {
-        server PORTAL:443;
+        server PORTAL_DNS:443;
     }
 
     upstream gateway_backend {
-        server GATEWAY:443;
+        server GATEWAY_DNS:443;
     }
     upstream gateway_admin {
-        server GATEWAY:9090;
+        server GATEWAY_DNS:9090;
     }
 
     server {
