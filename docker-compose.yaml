@@ -10,8 +10,6 @@ services:
   esmaster:
     build: elasticsearch-master
     container_name: esmaster
-    environment:
-      - VIRTUAL_HOST=$ELASTIC_URI
     networks:
       - ibmnet
     volumes:
@@ -24,7 +22,7 @@ services:
       - ibmnet
     environment:
       - DATAPOWER_ACCEPT_LICENSE=$ACCEPT_LICENSE
-      - VIRTUAL_HOST=$DATAPOWER_URI
+      - VIRTUAL_HOST=${DATAPOWER_URI}
 
   apim:
     image: ibmcom/apiconnect:manager-${APIC_VERSION}
@@ -47,7 +45,7 @@ services:
       - SMTP_SENDER
       - LOGSTASH_HOST=ibmlogstash
       - ACCEPT_LICENSE
-      - VIRTUAL_HOST=$APIM_URI
+      - VIRTUAL_HOST=${APIM_URI}
     container_name: apim
     networks:
       - ibmnet
@@ -67,7 +65,7 @@ services:
       - SMTP_PASSWORD
       - SMTP_SENDER
       - ACCEPT_LICENSE
-      - VIRTUAL_HOST=$PORTAL_URI
+      - VIRTUAL_HOST=${PORTAL_URI}
     volumes:
       - ibmportal_var:/var
       - ibmportal_etc:/etc
@@ -108,6 +106,7 @@ services:
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - /var/www/secure/certs:/etc/nginx/certs
+      - /var/www/nginx:/etc/nginx
     networks:
       - ibmnet
 
